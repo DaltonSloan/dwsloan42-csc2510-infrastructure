@@ -1,0 +1,90 @@
+---
+- name: Check for Python3 and pip in Debian Linux
+  apt:
+    name:
+      - python3
+      - python3-pip
+    state: present
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Install PyMySQL
+  pip:
+    name: pymysql
+    executable: pip3
+
+- name: Install MySQL server
+  apt:
+    name: mysql-server
+    state: present
+
+- name: Start MySQL service
+  service:
+    name: mysql
+    state: started
+    enabled: true
+
+- name: Copy update script to the server
+  copy:
+    src: /home/daltonw_sloan/dwsloan42-csc2510-infrastructure/update_mysql_root_password.sh
+    dest: /tmp/update_mysql_root_password.sh
+    mode: 0755
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Execute the script
+  shell: /tmp/update_mysql_root_password.sh "{{ mysql_root_password }}"
+  register: update_mysql_root_password_output
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Output result from script
+  debug:
+    msg: "{{ update_mysql_root_password_output.stdout }}"
+  when: update_mysql_root_password_output.stdout is defined
+
+- name: Clean up - remove the script from the remote server
+  file:
+    path: /tmp/update_mysql_root_password.sh
+    state: absent
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Create MySQL database
+  mysql_db:
+    name: "{{ mysql_database }}"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_password }}"
+
+- name: Create MySQL user
+  mysql_user:
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    name: "{{ mysql_user }}"
+    password: "{{ mysql_password }}"
+    host: "%"
+    priv: "{{ mysql_database }}.*:ALL"
+    state: present
+
+- name: Copy SQL file to remote host
+  copy:
+    src: "/home/daltonw_sloan/dwsloan42-csc2510-infrastructure/{{ mysql_sql_file }}"
+    dest: "/tmp/{{ mysql_sql_file }}"
+  when: mysql_import_data == true
+
+- name: Import SQL data
+  mysql_db:
+    name: "{{ mysql_database }}"
+    state: import
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    target: "/tmp/{{ mysql_sql_file }}"
+  when: mysql_import_data == true
+
+- name: Update MySQL bind-address and mysqlx-bind-address to allow external connections
+  lineinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: '^bind-address\s*=\s*127\.0\.0\.1', line: 'bind-address = 0.0.0.0' }
+    - { regexp: '^mysqlx-bind-address\s*=\s*127\.0\.0\.1', line: 'mysqlx-bind-address = 0.0.0.0' }
+  notify: Restart MySQL

@@ -10,13 +10,12 @@
   tags:
     - web
 
-- name: Update mysql
+ - name: Update mysql
   hosts: db
   become: yes
   vars: 
-    mysql_import_data: yes
+    mysql_import_data: yeas
   roles:
-    - update_apt
     - mysql
   tags:
     - db

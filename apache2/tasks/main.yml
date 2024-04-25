@@ -1,0 +1,59 @@
+---
+- name: Install python
+  ansible.builtin.package:
+    name: python
+    state: latest
+
+- name: Install required PHP packages
+  ansible.builtin.package:
+    name:
+      - php
+      - libapache2-mod-php
+      - php-mysql
+    state: present
+  become: yes
+  notify:
+    - Restart apache2
+
+- name: Install apache2
+  ansible.builtin.package:
+    name: apache2
+    state: present
+
+- name: Copy apache2.conf
+  ansible.builtin.copy:
+    src: /home/daltonw_sloan/dwsloan42-csc2510-infrastructure/files/config/apache2.conf
+    dest: '{{ copy_path }}/apache2.conf'
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Restart apache2
+
+- name: Copy index.html
+  ansible.builtin.copy:
+    src: /home/daltonw_sloan/dwsloan42-csc2510-infrastructure/files/site/index.html
+    dest: /var/www/html/index.html
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Restart apache2
+
+- name: Copy index.php
+  ansible.builtin.copy:
+    src: /home/daltonw_sloan/dwsloan42-csc2510-infrastructure/index.php
+    dest: /var/www/html/index.php
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Restart apache2
+
+- name: Create a symbolic link
+  ansible.builtin.file:
+    src: /etc/apache2/mods-available/headers.load
+    dest: /etc/apache2/mods-enabled/headers.load
+    owner: root
+    group: root
+    state: link
