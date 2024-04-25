@@ -1,0 +1,7 @@
+---
+   copy_path: "/etc/apache2"
+
+   copy_index_path: "/var/www/html"
+
+   
+# defaults file for apache2

@@ -1,7 +1,73 @@
-﻿<html>
- <head>
- </head>
- <body>
-   <h1>Hello World!<h1>
- </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy Interactive Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button, input[type="text"], input[type="range"] {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input[type="text"], input[type="range"] {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to Our Interactive Website</h1>
+    </header>
+    <div class="container">
+        <h2>Hello <span id="name">World</span>!</h2>
+        <input type="text" id="nameInput" placeholder="Enter your name">
+        <button onclick="updateName()">Update Name</button>
+        <p>Adjust the slider to change the font size:</p>
+        <input type="range" id="fontSizeSlider" min="16" max="48" value="24" oninput="changeFontSize()">
+        <p>Current Font Size: <span id="fontSizeValue">24</span>px</p>
+    </div>
+
+    <script>
+        function updateName() {
+            var nameInput = document.getElementById("nameInput").value;
+            document.getElementById("name").innerText = nameInput;
+        }
+
+        function changeFontSize() {
+            var fontSize = document.getElementById("fontSizeSlider").value;
+            document.getElementById("fontSizeValue").innerText = fontSize;
+            document.getElementById("name").style.fontSize = fontSize + "px";
+        }
+    </script>
+</body>
 </html>
